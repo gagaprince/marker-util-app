@@ -29,7 +29,10 @@ export const checkVersion = (platform) => {
           const fontVersion = info.version || 1;
           if(fontVersion<currentVersion){
             // 需要更新
+            console.log('需要更新:', ret);
             resolve(ret)
+          }else{
+            console.log('不需要更新');
           }
         }
       } catch (e) {
