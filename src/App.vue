@@ -1,7 +1,9 @@
 <script>
+	import { getttwid } from '@/common/lib/parser'
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			// getttwid();
 		},
 		onShow: function() {
 			console.log('App Show')

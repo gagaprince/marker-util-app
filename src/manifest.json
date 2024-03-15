@@ -7,9 +7,9 @@
     "transformPx" : false,
     "app-plus" : {
         /* 5+App特有相关 */
-		"compatible": {
-			"ignoreVersion": true
-		},
+        "compatible" : {
+            "ignoreVersion" : true
+        },
         "usingComponents" : true,
         "splashscreen" : {
             "alwaysShowBeforeRender" : true,
@@ -18,8 +18,9 @@
             "delay" : 0
         },
         "modules" : {
-			"VideoPlayer": {}
-		},
+            "VideoPlayer" : {},
+            "Camera" : {}
+        },
         /* 模块配置 */
         "distribute" : {
             /* 应用发布信息 */

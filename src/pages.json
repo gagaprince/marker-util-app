@@ -1,15 +1,33 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
+		
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationStyle": "custom",
+				"navigationBarBackgroundColor": "rgba(0,0,0,0)"
 			}
+		},
+		{
+			"path": "pages/jiao/index",
+			"style": {
+				"navigationBarTitleText": "教程",
+				"navigationBarTextStyle":"black"
+			}
+		},
+		{
+			"path": "pages/detail/index",
+			"style": {
+				"navigationBarTitleText": "视频详情",
+				"navigationBarTextStyle":"black"
+			}
+		},
+		{
+			"path": "pages/test/index"
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	}
