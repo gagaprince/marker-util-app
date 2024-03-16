@@ -21,16 +21,19 @@ export const checkVersion = (platform) => {
       console.log('------------checkVersion-----------');
       try {
         const ret = await request({
-          url: 'https://gagaprince.top/json/update.json'
+          url: `https://gagaprince.top/json/update.json?uuid=${plus.device.uuid}&t=${Date.now()}`
         });
         console.log('更新信息:', ret);
-        const { currentVersion } = ret || {};
+        const { currentVersion } = ret && ret.data || {};
+        console.log('currentVersion', currentVersion);
         if(currentVersion){
-          const fontVersion = info.version || 1;
-          if(fontVersion<currentVersion){
+          const fontVersion = info.versionCode || 1;
+          console.log('fontVersion:', fontVersion);
+          console.log('type fontVersion:', typeof fontVersion);
+          if(+fontVersion < +currentVersion){
             // 需要更新
-            console.log('需要更新:', ret);
-            resolve(ret)
+            console.log('需要更新:', ret.data);
+            resolve(ret.data)
           }else{
             console.log('不需要更新');
           }

@@ -1,27 +1,16 @@
 <template>
 	<view class="main h-c">
-		<view class="header">
-			<image src="../../static/index/header_bg.png" alt="">
-			<view class="header-title">嘎嘎去水印</view>
-			<view class="header-desc">完全免费</view>
-			<view class="header-desc-2">第一次使用请点下方教程</view>
-		</view>
-		<view class="line"></view>
 		<view class="content">
 			<view class="tools">
-				<textarea v-model="originText" placeholder="请输入链接" maxlength="1000">
+				<textarea v-model="originText" placeholder="请输入主页链接" maxlength="1000">
 					
 				</textarea>
 				<view class="paste h-c" @click="pasteText">粘贴</view>
 				<view class="clear h-c" @click="clearText">清空</view>
-				<view class="submit h-c" @click="invokeTask">去水印</view>
+				<view class="submit h-c" @click="invokeTask">批量去水印</view>
 			</view>
 			<view class="item-frame" @click="goJiao">
 				<view class="item-fn">使用教程</view>
-				<view class="arrow"><image src="https://p0.meituan.net/travelcube/54acfc734c4ee6728f5347dbb82f1dc3781.png"/></view>
-			</view>
-			<view class="item-frame">
-				<view class="item-fn">批量作业</view>
 				<view class="arrow"><image src="https://p0.meituan.net/travelcube/54acfc734c4ee6728f5347dbb82f1dc3781.png"/></view>
 			</view>
 		</view>
@@ -48,34 +37,34 @@
 				const originLink = this.parseLinkFromOriginText();
 				if(originLink){
 					console.log('解析出来的链接:', originLink);
-					uni.showLoading({
-						title: '解析中'
-					});
-					try{
-						const awemeId = await getAwemeId(originLink);
-						console.log('awemeId:', awemeId);
-						const videoInfo = await getVideoInfoByAwemeId(awemeId);
-						uni.hideLoading();
-						const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
-						const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
-						const user = videoInfo.aweme_detail?.author?.nickname || ''
-						const desc = videoInfo.aweme_detail?.desc || ''
-						const videoInfoMy = {
-							videoUrl, cover, user, desc
-						}
-						this.setVideoInfo(videoInfoMy)
-						console.log('videoInfo:',videoInfoMy);
-						uni.navigateTo({
-							url: '/pages/detail/index',
-						});
-					}catch(e){
-						console.error(e);
-						uni.hideLoading();
-						uni.showToast({
-							title: '解析失败，请稍后重试',
-							icon: 'none'
-						})
-					}
+					// uni.showLoading({
+					// 	title: '解析中'
+					// });
+					// try{
+					// 	const awemeId = await getAwemeId(originLink);
+					// 	console.log('awemeId:', awemeId);
+					// 	const videoInfo = await getVideoInfoByAwemeId(awemeId);
+					// 	uni.hideLoading();
+					// 	const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
+					// 	const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
+					// 	const user = videoInfo.aweme_detail?.author?.nickname || ''
+					// 	const desc = videoInfo.aweme_detail?.desc || ''
+					// 	const videoInfoMy = {
+					// 		videoUrl, cover, user, desc
+					// 	}
+					// 	this.setVideoInfo(videoInfoMy)
+					// 	console.log('videoInfo:',videoInfoMy);
+					// 	uni.navigateTo({
+					// 		url: '/pages/detail/index',
+					// 	});
+					// }catch(e){
+					// 	console.error(e);
+					// 	uni.hideLoading();
+					// 	uni.showToast({
+					// 		title: '解析失败，请稍后重试',
+					// 		icon: 'none'
+					// 	})
+					// }
 				}
 			},
 			parseLinkFromOriginText(){

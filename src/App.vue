@@ -5,7 +5,7 @@
 		onLaunch: function() {
 			console.log('App Launch')
 			// 需要调试一下
-			getttwid();
+			// getttwid();
 			checkForUpdate();
 		},
 		onShow: function() {
