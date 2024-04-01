@@ -2,7 +2,7 @@
 	<view class="main h-c">
 		<view class="header">
 			<image src="../../static/index/header_bg.png" alt="">
-			<view class="header-title">嘎嘎去水印</view>
+			<view class="header-title">嘎嘎剪辑工具箱</view>
 			<view class="header-desc">完全免费</view>
 			<view class="header-desc-2">第一次使用请点下方教程</view>
 		</view>
@@ -14,23 +14,23 @@
 				</textarea>
 				<view class="paste h-c" @click="pasteText">粘贴</view>
 				<view class="clear h-c" @click="clearText">清空</view>
-				<view class="submit h-c" @click="invokeTask">去水印</view>
+				<view class="submit h-c" @click="invokeTask">开始剪辑</view>
 			</view>
 			<view class="item-frame" @click="goJiao">
 				<view class="item-fn">使用教程</view>
 				<view class="arrow"><image src="https://p0.meituan.net/travelcube/54acfc734c4ee6728f5347dbb82f1dc3781.png"/></view>
 			</view>
-			<view class="item-frame">
+			<!-- <view class="item-frame">
 				<view class="item-fn">批量作业</view>
 				<view class="arrow"><image src="https://p0.meituan.net/travelcube/54acfc734c4ee6728f5347dbb82f1dc3781.png"/></view>
-			</view>
+			</view> -->
 		</view>
 	</view>
 </template>
 
 <script>
 	import { mapState, mapMutations, mapActions } from 'vuex';
-	import { getttwid,  getRealLink, getAwemeId, getVideoInfoByAwemeId } from '@/common/lib/parser'
+	import { getVideoInfoByLink } from '@/common/lib/parser'
 
 	export default {
 		
@@ -52,22 +52,20 @@
 						title: '解析中'
 					});
 					try{
-						const awemeId = await getAwemeId(originLink);
-						console.log('awemeId:', awemeId);
-						const videoInfo = await getVideoInfoByAwemeId(awemeId);
-						uni.hideLoading();
-						const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
-						const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
-						const user = videoInfo.aweme_detail?.author?.nickname || ''
-						const desc = videoInfo.aweme_detail?.desc || ''
-						const videoInfoMy = {
-							videoUrl, cover, user, desc
+						const videoInfo = await getVideoInfoByLink(originLink);
+						if(videoInfo){
+							this.setVideoInfo(videoInfo)
+							console.log('videoInfo:',videoInfo);
+							uni.navigateTo({
+								url: '/pages/detail/index',
+							});
+						}else{
+							uni.showToast({
+								title: '解析失败，请稍后重试',
+								icon: 'none'
+							})
 						}
-						this.setVideoInfo(videoInfoMy)
-						console.log('videoInfo:',videoInfoMy);
-						uni.navigateTo({
-							url: '/pages/detail/index',
-						});
+						
 					}catch(e){
 						console.error(e);
 						uni.hideLoading();

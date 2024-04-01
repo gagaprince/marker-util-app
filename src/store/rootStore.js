@@ -4,8 +4,6 @@ const State = {
 const getters = {};
 const mutations = {
   setVideoInfo(state, data) {
-    console.log('222');
-    console.log(data);
     state.videoInfo = data;
   },
 };
