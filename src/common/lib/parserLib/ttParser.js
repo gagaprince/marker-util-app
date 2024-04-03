@@ -150,3 +150,78 @@ export const getVideoInfoByVideoIdAndCookie = async (videoId, cookieObj={}, real
         console.error(e);
     }
 }
+
+/**
+ * 
+ * @param {*} html 
+ * {
+ *  type: video|token
+ *  data: videoInfo | tokenStr
+ * }
+ * 
+ */
+function parseRetHtml(html){
+    // 是否拿到了信息
+    const str = html;
+    const match = str.match(/<source src=\"(.*?)\"/);
+    const srcValue = match ? match[1] : null;
+
+    if(srcValue){
+        return {
+            type: 'video',
+            data: {
+                videoUrl: srcValue.indexOf('http')===0?srcValue:`https:${srcValue}`,
+            }
+        }
+    }else{
+        // 没有拿到信息返回新token 重新返回token
+        const tokenMatch = str.match(/id=\"token\" value=\"(.*?)\"/);
+        const tokenVal =  tokenMatch ? tokenMatch[1] : '';
+        if(tokenVal){
+            return {
+                type: 'token',
+                data: tokenVal,
+            }
+        }
+    }
+    
+    return null;
+}
+let tokenCache = 'G7eRpMaa'; //tokenCache
+// dlpanda 网站解析
+export const getVideoInfoFromDLpanda = async (link, token='')=>{
+    const spiderLink = `https://dlpanda.com/zh-CN?url=${encodeURIComponent(link)}&token=${token || tokenCache}`;
+    try{
+        const ret = await request({
+            url: spiderLink,
+            responseType: 'text',
+            headers: {
+                "Host": "dlpanda.com",
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+                "accept-language": "zh-CN,zh;q=0.9"
+            },            
+        })
+        const html = ret.data;
+        // console.log(html);
+        const parseRet = parseRetHtml(html);
+        if(parseRet){
+            if(parseRet.type === 'token' && parseRet.data !== token){
+                console.log('获取token重新请求:', parseRet.data);
+                tokenCache = parseRet.data;
+                return getVideoInfoFromDLpanda(link, parseRet.data);
+            }else{
+                if(parseRet.type === 'token'){
+                    console.log('新token解析也失败，应该是链接有问题，停止解析');
+                    return null;
+                }
+                console.log('解析出video信息:', parseRet.data);
+                return parseRet.data;
+            }
+        }
+        console.log('解析失败！');
+        return null;
+    }catch(e){
+        console.error(e);
+    }
+}

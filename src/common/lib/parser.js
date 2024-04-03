@@ -1,5 +1,5 @@
 import { getAwemeId, getVideoInfoByAwemeId } from './parserLib/dyParser';
-import { getRealLink, getCookieObj, getVideoIdFromRealLink, getVideoInfoByVideoIdAndCookie } from './parserLib/ttParser';
+import { getRealLink, getCookieObj, getVideoIdFromRealLink, getVideoInfoByVideoIdAndCookie, getVideoInfoFromDLpanda } from './parserLib/ttParser';
 
 
 // 获取短视频内容
@@ -18,15 +18,20 @@ async function getVideoInfoByDYLink(originLink){
     return videoInfoMy;
 }
 async function getVideoInfoByTTLink(originLink){
-    console.log(originLink);
-    const realLink = await getRealLink(originLink);
-    console.log('realLink:', realLink);
-    const cookieObj = await getCookieObj(realLink);
-    console.log(cookieObj);
-    const videoId = getVideoIdFromRealLink(realLink);
-    console.log('videoId:', videoId);
 
-    const videoInfo = await getVideoInfoByVideoIdAndCookie(videoId, cookieObj);
+    const ret = await getVideoInfoFromDLpanda(originLink);
+    console.log(ret);
+    return ret;
+
+    // console.log(originLink);
+    // const realLink = await getRealLink(originLink);
+    // console.log('realLink:', realLink);
+    // const cookieObj = await getCookieObj(realLink);
+    // console.log(cookieObj);
+    // const videoId = getVideoIdFromRealLink(realLink);
+    // console.log('videoId:', videoId);
+
+    // const videoInfo = await getVideoInfoByVideoIdAndCookie(videoId, cookieObj);
 }
 // 获取短视频内容
 

@@ -55,6 +55,7 @@
 						const videoInfo = await getVideoInfoByLink(originLink);
 						if(videoInfo){
 							this.setVideoInfo(videoInfo)
+							uni.hideLoading();
 							console.log('videoInfo:',videoInfo);
 							uni.navigateTo({
 								url: '/pages/detail/index',
