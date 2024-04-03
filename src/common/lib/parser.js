@@ -26,7 +26,7 @@ async function getVideoInfoByTTLink(originLink){
     const videoId = getVideoIdFromRealLink(realLink);
     console.log('videoId:', videoId);
 
-    const videoInfo = await getVideoInfoByVideoIdAndCookie(videoId, cookieObj);
+    const videoInfo = await getVideoInfoByVideoIdAndCookie(videoId, cookieObj, realLink);
 }
 // 获取短视频内容
 

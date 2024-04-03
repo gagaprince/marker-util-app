@@ -1,5 +1,12 @@
 {
 	"pages": [
+		// {
+		// 	"path": "pages/spider/web",
+		// 	"style": {
+		// 		"navigationBarTitleText": "测试webview",
+		// 		"navigationBarTextStyle":"black"
+		// 	}
+		// },
 		{
 			"path": "pages/index/index",
 			"style": {
