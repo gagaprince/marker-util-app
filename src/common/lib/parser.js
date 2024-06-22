@@ -3,21 +3,24 @@ import { getRealLink, getCookieObj, getVideoIdFromRealLink, getVideoInfoByVideoI
 
 
 // 获取短视频内容
-async function getVideoInfoByDYLink(originLink){
-    const awemeId = await getAwemeId(originLink);
-    console.log('awemeId:', awemeId);
-    const videoInfo = await getVideoInfoByAwemeId(awemeId);
-    uni.hideLoading();
-    const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
-    const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
-    const user = videoInfo.aweme_detail?.author?.nickname || ''
-    const desc = videoInfo.aweme_detail?.desc || ''
-    const videoInfoMy = {
-        videoUrl, cover, user, desc
-    }
-    return videoInfoMy;
+async function getVideoInfoByDYLink(originLink) {
+    // const awemeId = await getAwemeId(originLink);
+    // console.log('awemeId:', awemeId);
+    // const videoInfo = await getVideoInfoByAwemeId(awemeId);
+    // uni.hideLoading();
+    // const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
+    // const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
+    // const user = videoInfo.aweme_detail?.author?.nickname || ''
+    // const desc = videoInfo.aweme_detail?.desc || ''
+    // const videoInfoMy = {
+    //     videoUrl, cover, user, desc
+    // }
+    // return videoInfoMy;
+    const ret = await getVideoInfoFromDLpanda(originLink);
+    console.log(ret);
+    return ret;
 }
-async function getVideoInfoByTTLink(originLink){
+async function getVideoInfoByTTLink(originLink) {
 
     const ret = await getVideoInfoFromDLpanda(originLink);
     console.log(ret);
@@ -41,10 +44,10 @@ async function getVideoInfoByTTLink(originLink){
 // 检测是什么平台
 // https://v.douyin.com/iFCvgktY/ 
 // https://www.tiktok.com/t/ZPRTuroNq/
-function checkPL(link=''){
-    if(link.indexOf('douyin')!==-1){
+function checkPL(link = '') {
+    if (link.indexOf('douyin') !== -1) {
         return 'dy';
-    }else if(link.indexOf('tiktok')!==-1){
+    } else if (link.indexOf('tiktok') !== -1) {
         return 'tt';
     }
 
@@ -58,9 +61,9 @@ function checkPL(link=''){
  *  videoUrl, cover, user, desc
  * }
  */
-export const getVideoInfoByLink = async (link)=>{
+export const getVideoInfoByLink = async (link) => {
     let videoInfo;
-    switch(checkPL(link)){
+    switch (checkPL(link)) {
         case 'dy':
             videoInfo = await getVideoInfoByDYLink(link);
             break;
@@ -73,6 +76,6 @@ export const getVideoInfoByLink = async (link)=>{
     return videoInfo;
 }
 
-export const getSteamInfoByLink = (link)=>{
+export const getSteamInfoByLink = (link) => {
 
 }

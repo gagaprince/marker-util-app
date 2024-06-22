@@ -14,39 +14,39 @@ function generateRandomStr(randomLength = 107) {
     let randomStr = '';
     let baseStr = 'ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz0123456789=';
     let length = baseStr.length - 1;
-    for(let i = 0; i < randomLength; i++) {
+    for (let i = 0; i < randomLength; i++) {
         randomStr += baseStr[Math.floor(Math.random() * length)];
     }
     return randomStr;
 }
 
-function getMsToken(){
+function getMsToken() {
     return generateRandomStr(107)
 }
 
-export const sign = (url,user_agent) => {
+export const sign = (url, user_agent) => {
     console.log(url, user_agent);
-    return new Promise((res, rej)=>{
+    return new Promise((res, rej) => {
         MarkerUtilNativeModule.sign({
-            url, 
+            url,
             user_agent,
-        }, (ret)=>{
-            if(ret&&ret.data){
+        }, (ret) => {
+            if (ret && ret.data) {
                 res(ret.data);
-            }else{
+            } else {
                 rej('未知错误');
             }
         });
     });
 }
 
-export const getttwid = async (force = false)=>{
-    if (!ttwidCache || force){
+export const getttwid = async (force = false) => {
+    if (!ttwidCache || force) {
         try {
             const ret = await request({
                 url: 'https://ttwid.bytedance.com/ttwid/union/register/',
                 method: 'POST',
-                data: {"migrate_info":{"ticket":"","source":"node"},"region":"cn","union":true,"service":"www.ixigua.com","aid":1768,"cbUrlProtocol":"https","needFid":false},
+                data: { "migrate_info": { "ticket": "", "source": "node" }, "region": "cn", "union": true, "service": "www.ixigua.com", "aid": 1768, "cbUrlProtocol": "https", "needFid": false },
                 headers: {
                     "Host": "ttwid.bytedance.com",
                     "accept": "application/json",
@@ -58,19 +58,19 @@ export const getttwid = async (force = false)=>{
             const headers = ret.headers || {};
             const setCookie = headers['Set-Cookie'] || '';
             ttwidCache = parseTtwidFromCookie(setCookie);
-        }catch(e){
+        } catch (e) {
             console.error(e);
         }
     }
     return ttwidCache;
 }
 
-export const getRealLink = async (link)=>{
-    try{
+export const getRealLink = async (link) => {
+    try {
         const ret = await request({
-            url:link,
+            url: link,
             responseType: 'text',
-            followRedirects:0,
+            followRedirects: 0,
             headers: {
                 "Host": "v.douyin.com",
                 "pragma": "no-cache",
@@ -79,30 +79,30 @@ export const getRealLink = async (link)=>{
                 "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1",
                 "accept-language": "zh-CN,zh;q=0.9",
                 "cache-control": "no-cache"
-            },            
+            },
         })
         const headers = ret.headers || {};
         const location = headers['Location'] || '';
         return location;
-    }catch(e){
+    } catch (e) {
         console.error(e);
     }
     return '';
 }
 
-export const getAwemeId = async (originLink)=>{
+export const getAwemeId = async (originLink) => {
     const relink = await getRealLink(originLink);
-    if(relink){
+    if (relink) {
         let match = relink.match(/video\/(\d+)\//) || [];
         const awemeId = match[1] || '';
         return awemeId;
     }
     return '';
-} 
+}
 
 
 
-export const getVideoInfoByAwemeId = async (awemeId)=>{
+export const getVideoInfoByAwemeId = async (awemeId) => {
     const ttwid = await getttwid();
     const msToken = getMsToken();
     const headers = {
@@ -117,32 +117,108 @@ export const getVideoInfoByAwemeId = async (awemeId)=>{
 
     console.log('url:', url);
 
-    try{
-        
+    try {
+
         const bogusObj = await sign(url, headers['user-agent']);
 
         console.log('bogus:', bogusObj);
-    
+
         const newUrl = `${url}&X-Bogus=${bogusObj['X-Bogus']}`;
-    
+
         console.log('newUrl:', newUrl);
-    
+
         const ret = await request({
             url: newUrl,
             headers,
         });
-    
+
         console.log(ret);
-    
+
         return ret && ret.data;
-    }catch (e){
+    } catch (e) {
         console.error(e);
     }
-    
+
 
 }
 
-export const  getQueryString = (name, url) => {
+/**
+ * 
+ * @param {*} html 
+ * {
+ *  type: video|token
+ *  data: videoInfo | tokenStr
+ * }
+ * 
+ */
+function parseRetHtml(html) {
+    // 是否拿到了信息
+    const str = html;
+    const match = str.match(/<source src=\"(.*?)\"/);
+    const srcValue = match ? match[1] : null;
+
+    if (srcValue) {
+        return {
+            type: 'video',
+            data: {
+                videoUrl: srcValue.indexOf('http') === 0 ? srcValue : `https:${srcValue}`,
+            }
+        }
+    } else {
+        // 没有拿到信息返回新token 重新返回token
+        const tokenMatch = str.match(/id=\"token\" value=\"(.*?)\"/);
+        const tokenVal = tokenMatch ? tokenMatch[1] : '';
+        if (tokenVal) {
+            return {
+                type: 'token',
+                data: tokenVal,
+            }
+        }
+    }
+
+    return null;
+}
+
+let tokenCache = 'G7eRpMaa'; //tokenCache
+// dlpanda 网站解析
+export const getVideoInfoFromDLpanda = async (link, token = '') => {
+    const spiderLink = `https://dlpanda.com/zh-CN?url=${encodeURIComponent(link)}&token=${token || tokenCache}`;
+    try {
+        const ret = await request({
+            url: spiderLink,
+            responseType: 'text',
+            headers: {
+                "Host": "dlpanda.com",
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+                "accept-language": "zh-CN,zh;q=0.9"
+            },
+        })
+        const html = ret.data;
+        // console.log(html);
+        const parseRet = parseRetHtml(html);
+        if (parseRet) {
+            if (parseRet.type === 'token' && parseRet.data !== token) {
+                console.log('获取token重新请求:', parseRet.data);
+                tokenCache = parseRet.data;
+                return getVideoInfoFromDLpanda(link, parseRet.data);
+            } else {
+                if (parseRet.type === 'token') {
+                    console.log('新token解析也失败，应该是链接有问题，停止解析');
+                    return null;
+                }
+                console.log('解析出video信息:', parseRet.data);
+                return parseRet.data;
+            }
+        }
+        console.log('解析失败！');
+        return null;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export const getQueryString = (name, url) => {
     let u = url || window.location.search;
     let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
     if (u.substr(0, 1) === "?") {
@@ -155,7 +231,7 @@ export const  getQueryString = (name, url) => {
     return "";
 }
 
-export const getPercenVideos = async (secUserId, count, maxCursor=0)=>{
+export const getPercenVideos = async (secUserId, count, maxCursor = 0) => {
     const ttwid = await getttwid();
     const msToken = getMsToken();
     const headers = {
@@ -171,16 +247,16 @@ export const getPercenVideos = async (secUserId, count, maxCursor=0)=>{
 
     console.log('url:', url);
 
-    try{
-        
+    try {
+
         const bogusObj = await sign(url, headers['user-agent']);
 
         console.log('bogus:', bogusObj);
-    
+
         const newUrl = `${url}&X-Bogus=${bogusObj['X-Bogus']}`;
-    
+
         console.log('newUrl:', newUrl);
-    
+
         const ret = await request({
             url: newUrl,
             headers,
@@ -190,7 +266,7 @@ export const getPercenVideos = async (secUserId, count, maxCursor=0)=>{
         console.log(ret);
         // 太大的数据会打印不出来 所以不要打开
         return ret && ret.data;
-    }catch (e){
+    } catch (e) {
         console.error(e);
     }
 }
