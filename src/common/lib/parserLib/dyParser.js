@@ -120,10 +120,10 @@ export const getAwemeId = async (originLink) => {
 
 
 
-export const getVideoInfoByAwemeId = async (awemeId) => {
+export const getVideoInfoByAwemeId = async (awemeId, options) => {
     const ttwid = await getttwid(true);
     const msToken = getMsToken();
-    const verifyFp = 'verify_lxpouvx2_YjJCsgHW_lO0r_4gyB_87Xc_PnzailIE4tJF';
+    const verifyFp = options.fp || '';
     const headers = {
         "Host": "www.douyin.com",
         "Cookie": `msToken=${msToken};ttwid=${ttwid};`,

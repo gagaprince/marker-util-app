@@ -3,11 +3,11 @@ import { getRealLink, getCookieObj, getVideoIdFromRealLink, getVideoInfoByVideoI
 
 
 // 获取短视频内容
-async function getVideoInfoByDYLink(originLink) {
+async function getVideoInfoByDYLink(originLink, options) {
     try {
         const awemeId = await getAwemeId(originLink);
         console.log('awemeId:', awemeId);
-        const videoInfo = await getVideoInfoByAwemeId(awemeId);
+        const videoInfo = await getVideoInfoByAwemeId(awemeId, options);
         uni.hideLoading();
         const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0] || '';
         const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
@@ -19,6 +19,7 @@ async function getVideoInfoByDYLink(originLink) {
         return videoInfoMy;
     } catch (e) {
         const ret = await getVideoInfoFromDLpanda(originLink);
+        ret.from = 'dlpanda';
         console.log(ret);
         return ret;
     }
@@ -66,11 +67,11 @@ function checkPL(link = '') {
  *  videoUrl, cover, user, desc
  * }
  */
-export const getVideoInfoByLink = async (link) => {
+export const getVideoInfoByLink = async (link, options) => {
     let videoInfo;
     switch (checkPL(link)) {
         case 'dy':
-            videoInfo = await getVideoInfoByDYLink(link);
+            videoInfo = await getVideoInfoByDYLink(link, options);
             break;
         case 'tt':
             videoInfo = await getVideoInfoByTTLink(link);

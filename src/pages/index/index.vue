@@ -14,6 +14,7 @@
 				</textarea>
 				<view class="paste h-c" @click="pasteText">粘贴</view>
 				<view class="clear h-c" @click="clearText">清空</view>
+				<input type="text" v-model="fp" placeholder="验证码参数，可不填" class="fp-text">
 				<view class="submit h-c" @click="invokeTask">开始剪辑</view>
 			</view>
 			<view class="item-frame" @click="goJiao">
@@ -37,6 +38,7 @@
 		data() {
 			return {
 				originText: '',
+				fp: '',
 			}
 		},
 		onLoad() {
@@ -49,14 +51,26 @@
 				if(originLink){
 					console.log('解析出来的链接:', originLink);
 					uni.showLoading({
-						title: '解析中'
+						title: '解析中',
+						duration: 10000
 					});
 					try{
-						const videoInfo = await getVideoInfoByLink(originLink);
+						const fp = this.fp || uni.getStorageSync('dy_fp') || '';
+						const videoInfo = await getVideoInfoByLink(originLink, {fp});
 						if(videoInfo){
 							this.setVideoInfo(videoInfo)
 							uni.hideLoading();
 							console.log('videoInfo:',videoInfo);
+							if(videoInfo.from === 'dlpanda'){
+								uni.showToast({
+									title: '验证码需要更新了，否则解析会慢',
+									icon: 'none'
+								})
+							}else{
+								if(this.fp){// 如果fp有效 则保存fp
+									uni.setStorageSync('dy_fp', this.fp);
+								}
+							}
 							uni.navigateTo({
 								url: '/pages/detail/index',
 							});
@@ -176,6 +190,14 @@
 				textarea{
 					width: 650rpx;
 					height: 300rpx;
+					margin-top:30rpx;
+					padding: 20rpx;
+					border: 2rpx solid #dfdfdf;;
+					border-radius: 20rpx;
+				}
+				.fp-text{
+					width:650rpx;
+					height: 60rpx;
 					margin-top:30rpx;
 					padding: 20rpx;
 					border: 2rpx solid #dfdfdf;;
