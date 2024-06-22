@@ -1,5 +1,6 @@
 
 import { request } from '../request';
+
 const MarkerUtilNativeModule = uni.requireNativePlugin('MarkerUtilUniPlugin-MarkerUtilNativeModule');
 
 
@@ -40,6 +41,22 @@ export const sign = (url, user_agent) => {
     });
 }
 
+export const signFromHttp = async (url, ua) => {
+    console.log(url, ua);
+    const ret = await uni.request({
+        url: 'https://new.gagaprince.top/smallvideo/dyABogus',
+        method: 'POST',
+        data: {
+            url, ua
+        }
+    })
+    console.log('signFromHttp ret:', ret);
+    if (ret.statusCode === 200) {
+        return ret.data;
+    }
+    return ret;
+}
+
 export const getttwid = async (force = false) => {
     if (!ttwidCache || force) {
         try {
@@ -57,6 +74,7 @@ export const getttwid = async (force = false) => {
             })
             const headers = ret.headers || {};
             const setCookie = headers['Set-Cookie'] || '';
+            console.log('getttwid headers:', headers);
             ttwidCache = parseTtwidFromCookie(setCookie);
         } catch (e) {
             console.error(e);
@@ -103,8 +121,9 @@ export const getAwemeId = async (originLink) => {
 
 
 export const getVideoInfoByAwemeId = async (awemeId) => {
-    const ttwid = await getttwid();
+    const ttwid = await getttwid(true);
     const msToken = getMsToken();
+    const verifyFp = 'verify_lxpouvx2_YjJCsgHW_lO0r_4gyB_87Xc_PnzailIE4tJF';
     const headers = {
         "Host": "www.douyin.com",
         "Cookie": `msToken=${msToken};ttwid=${ttwid};`,
@@ -113,109 +132,38 @@ export const getVideoInfoByAwemeId = async (awemeId) => {
         "accept-language": "zh-Hans-CN;q=1, en-CN;q=0.9, zh-Hant-CN;q=0.8",
         "referer": "https://www.douyin.com/"
     };
-    const url = `https://www.douyin.com/aweme/v1/web/aweme/detail/?aweme_id=${awemeId}&aid=1128&version_name=23.5.0&device_platform=android&os_version=2333`;
+    const url = `https://www.douyin.com/aweme/v1/web/aweme/detail/?device_platform=webapp&aid=6383&channel=channel_pc_web&aweme_id=${awemeId}&update_version_code=170400&pc_client_type=1&version_code=190500&version_name=19.5.0&cookie_enabled=true&screen_width=1728&screen_height=1117&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Chrome&browser_version=125.0.0.0&browser_online=true&engine_name=Blink&engine_version=125.0.0.0&os_name=Mac+OS&os_version=10.15.7&cpu_core_num=12&device_memory=8&platform=PC&downlink=10&verifyFp=${verifyFp}`;
 
     console.log('url:', url);
 
     try {
 
-        const bogusObj = await sign(url, headers['user-agent']);
+        const bogusObjRet = await signFromHttp(url, headers['user-agent']);
+        if (bogusObjRet.code === 0) {
+            const bogusObj = bogusObjRet.data;
+            console.log('bogus:', bogusObj);
 
-        console.log('bogus:', bogusObj);
+            const newUrl = bogusObj.url;
 
-        const newUrl = `${url}&X-Bogus=${bogusObj['X-Bogus']}`;
+            console.log('newUrl:', newUrl);
+            console.log('headers:', headers);
 
-        console.log('newUrl:', newUrl);
+            const ret = await request({
+                url: newUrl,
+                headers,
+            });
 
-        const ret = await request({
-            url: newUrl,
-            headers,
-        });
+            console.log(ret);
 
-        console.log(ret);
+            return ret && ret.data;
+        }
+        return {};
 
-        return ret && ret.data;
     } catch (e) {
         console.error(e);
     }
 
 
-}
-
-/**
- * 
- * @param {*} html 
- * {
- *  type: video|token
- *  data: videoInfo | tokenStr
- * }
- * 
- */
-function parseRetHtml(html) {
-    // 是否拿到了信息
-    const str = html;
-    const match = str.match(/<source src=\"(.*?)\"/);
-    const srcValue = match ? match[1] : null;
-
-    if (srcValue) {
-        return {
-            type: 'video',
-            data: {
-                videoUrl: srcValue.indexOf('http') === 0 ? srcValue : `https:${srcValue}`,
-            }
-        }
-    } else {
-        // 没有拿到信息返回新token 重新返回token
-        const tokenMatch = str.match(/id=\"token\" value=\"(.*?)\"/);
-        const tokenVal = tokenMatch ? tokenMatch[1] : '';
-        if (tokenVal) {
-            return {
-                type: 'token',
-                data: tokenVal,
-            }
-        }
-    }
-
-    return null;
-}
-
-let tokenCache = 'G7eRpMaa'; //tokenCache
-// dlpanda 网站解析
-export const getVideoInfoFromDLpanda = async (link, token = '') => {
-    const spiderLink = `https://dlpanda.com/zh-CN?url=${encodeURIComponent(link)}&token=${token || tokenCache}`;
-    try {
-        const ret = await request({
-            url: spiderLink,
-            responseType: 'text',
-            headers: {
-                "Host": "dlpanda.com",
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
-                "accept-language": "zh-CN,zh;q=0.9"
-            },
-        })
-        const html = ret.data;
-        // console.log(html);
-        const parseRet = parseRetHtml(html);
-        if (parseRet) {
-            if (parseRet.type === 'token' && parseRet.data !== token) {
-                console.log('获取token重新请求:', parseRet.data);
-                tokenCache = parseRet.data;
-                return getVideoInfoFromDLpanda(link, parseRet.data);
-            } else {
-                if (parseRet.type === 'token') {
-                    console.log('新token解析也失败，应该是链接有问题，停止解析');
-                    return null;
-                }
-                console.log('解析出video信息:', parseRet.data);
-                return parseRet.data;
-            }
-        }
-        console.log('解析失败！');
-        return null;
-    } catch (e) {
-        console.error(e);
-    }
 }
 
 export const getQueryString = (name, url) => {
