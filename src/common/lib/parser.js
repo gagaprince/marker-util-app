@@ -4,21 +4,26 @@ import { getRealLink, getCookieObj, getVideoIdFromRealLink, getVideoInfoByVideoI
 
 // 获取短视频内容
 async function getVideoInfoByDYLink(originLink) {
-    // const awemeId = await getAwemeId(originLink);
-    // console.log('awemeId:', awemeId);
-    // const videoInfo = await getVideoInfoByAwemeId(awemeId);
-    // uni.hideLoading();
-    // const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0]||'';
-    // const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
-    // const user = videoInfo.aweme_detail?.author?.nickname || ''
-    // const desc = videoInfo.aweme_detail?.desc || ''
-    // const videoInfoMy = {
-    //     videoUrl, cover, user, desc
-    // }
-    // return videoInfoMy;
-    const ret = await getVideoInfoFromDLpanda(originLink);
-    console.log(ret);
-    return ret;
+    try {
+        const awemeId = await getAwemeId(originLink);
+        console.log('awemeId:', awemeId);
+        const videoInfo = await getVideoInfoByAwemeId(awemeId);
+        uni.hideLoading();
+        const videoUrl = videoInfo.aweme_detail?.video?.play_addr?.url_list[0] || '';
+        const cover = videoInfo.aweme_detail?.video?.cover?.url_list[0] || '';
+        const user = videoInfo.aweme_detail?.author?.nickname || ''
+        const desc = videoInfo.aweme_detail?.desc || ''
+        const videoInfoMy = {
+            videoUrl, cover, user, desc
+        }
+        return videoInfoMy;
+    } catch (e) {
+        const ret = await getVideoInfoFromDLpanda(originLink);
+        console.log(ret);
+        return ret;
+    }
+
+
 }
 async function getVideoInfoByTTLink(originLink) {
 
